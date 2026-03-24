@@ -7,6 +7,12 @@
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
+    My initial design consists of 
+    -Owner : represents a pet owner. stores name, email, phone and responsible for adding and removing pets
+    -Pet : represents the pet. store species, breed, age and daily activities. 
+    -Task : represents the care actions like feeding, walk, vet appointment. Stores time and priority level for the task. can be marked complete, schedule etc.
+    -Scheduler : holds all task and sort them by priority. also detects scheduling conflicts
+
 **b. Design changes**
 
 - Did your design change during implementation?
