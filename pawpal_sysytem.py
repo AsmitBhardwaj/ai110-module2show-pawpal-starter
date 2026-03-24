@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 import uuid
+from typing import Optional
 
 @dataclass
 class Owner:
@@ -8,7 +9,7 @@ class Owner:
     name: str = ""
     email: str = ""
     phone: str = ""
-    pets: list = field(default_factory=list)
+    pets: list["Pet"] = field(default_factory=list)
 
     def add_pet(self, pet):
         pass
@@ -21,12 +22,12 @@ class Owner:
 
 @dataclass
 class Pet:
+    owner_id: uuid.UUID
     pet_id: uuid.UUID = field(default_factory=uuid.uuid4)
     name: str = ""
     species: str = ""
     breed: str = ""
     age: int = 0
-    owner_id: uuid.UUID = field(default_factory=uuid.uuid4)
 
     def get_info(self):
         pass
@@ -36,13 +37,13 @@ class Pet:
 
 @dataclass
 class Task:
+    pet_id: uuid.UUID
     task_id: uuid.UUID = field(default_factory=uuid.uuid4)
-    pet_id: uuid.UUID = field(default_factory=uuid.uuid4)
     task_type: str = ""
     due_time: datetime = field(default_factory=datetime.now)
     priority: int = 1  # 1-5
     is_recurring: bool = False
-    frequency: str = ""
+    frequency: Optional[str] = None
     completed: bool = False
 
     def complete(self):
@@ -56,7 +57,7 @@ class Task:
 
 @dataclass
 class Scheduler:
-    tasks: list = field(default_factory=list)
+    tasks: list["Task"] = field(default_factory=list)
 
     def add_task(self, task):
         pass

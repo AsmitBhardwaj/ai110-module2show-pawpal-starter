@@ -17,6 +17,11 @@
 
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
+After asking Copilot to review the skeleton, it flagged that Pet.owner_id 
+and Task.pet_id were auto-generating UUIDs instead of being passed in, 
+which would break the Owner↔Pet and Pet↔Task relationships. I fixed these 
+to be required parameters. I also changed frequency to Optional[str] = None 
+and added proper type hints to list fields.
 
 ---
 
@@ -26,6 +31,22 @@
 
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
 - How did you decide which constraints mattered most?
+
+    The Scheduler should retrieve tasks by traversing the ownership chain:
+    **Owner -> pets -> tasks**.  
+    I would implement a method like `Scheduler.get_owner_tasks(owner)` that flattens
+    all tasks from each pet into one list, then applies scheduling rules.
+
+    Minimal pattern:
+    - Iterate `owner.pets`
+    - For each pet, append `pet.tasks` into a single list
+    - Optionally filter completed tasks
+    - Sort by priority first, then scheduled time
+
+    Pseudocode:
+    `all_tasks = [task for pet in owner.pets for task in pet.tasks]`
+
+    This keeps relationships consistent and avoids duplicated task storage inside Scheduler.
 
 **b. Tradeoffs**
 
