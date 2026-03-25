@@ -53,6 +53,21 @@ and added proper type hints to list fields.
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
 
+My conflict detection checks if two tasks are within 30 minutes of each other 
+using only their start times. It does not account for task duration — for example, 
+a 1-hour vet appointment and a walk scheduled 20 minutes later would not actually 
+overlap in reality if the appointment finishes first. A more accurate approach 
+would store a duration for each task and check if time windows overlap, but this 
+adds complexity. For now, the 30-minute window is a simple and readable approximation.
+
+The detect_conflicts() method is also O(n²) — it compares every task against every 
+other task. This is fine for a small number of tasks, but would slow down with 
+hundreds of tasks. A faster approach would sort tasks by time first and only 
+compare neighbors, making it O(n log n). It is reasonable because realistically a owner 
+is not gonna have an insane number of pets. A typical pet owner has 2-5 pets with 10-20
+tasks a day meaning at that scale O(n²) and O(n log n) perform virtually identically. We 
+will not be experiencing any performance cost
+
 ---
 
 ## 3. AI Collaboration

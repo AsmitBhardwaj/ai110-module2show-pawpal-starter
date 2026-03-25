@@ -24,6 +24,14 @@ Your final app should:
 
 ## Getting started
 
+PawPal+ includes intelligent scheduling algorithms:
+
+- **Priority + Time Sorting** — tasks are ordered by due time and priority
+- **Pet & Status Filtering** — view tasks for a specific pet or completion status
+- **Recurring Tasks** — completed recurring tasks automatically reschedule 
+  based on their frequency
+- **Conflict Detection** — warns when two tasks for the same pet overlap within 30 minutes
+
 ### Setup
 
 ```bash

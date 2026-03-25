@@ -1,5 +1,8 @@
 import streamlit as st
-from pawpal_system imop
+from pawpal_system import Task, Pet, Owner, Scheduler
+from datetime import datetime, timedelta
+import uuid
+
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 
@@ -9,31 +12,28 @@ st.markdown(
     """
 Welcome to the PawPal+ starter app.
 
-This file is intentionally thin. It gives you a working Streamlit app so you can start quickly,
-but **it does not implement the project logic**. Your job is to design the system and build it.
-
-Use this app as your interactive demo once your backend classes/functions exist.
+PawPal+ is a smart pet care management system that helps owners keep their pets happy and healthy.
+Track daily routines, schedule tasks, and get intelligent conflict detection — all in one place.
 """
 )
 
 with st.expander("Scenario", expanded=True):
     st.markdown(
         """
-**PawPal+** is a pet care planning assistant. It helps a pet owner plan care tasks
-for their pet(s) based on constraints like time, priority, and preferences.
-
-You will design and implement the scheduling logic and connect it to this Streamlit UI.
+**PawPal+** helps pet owners manage daily care routines for their pets. 
+Add your pets, schedule tasks like feedings, walks, medications, and vet appointments, 
+and let the system prioritize and organize your day automatically.
 """
     )
 
 with st.expander("What you need to build", expanded=True):
     st.markdown(
         """
-At minimum, your system should:
-- Represent pet care tasks (what needs to happen, how long it takes, priority)
-- Represent the pet and the owner (basic info and preferences)
-- Build a plan/schedule for a day that chooses and orders tasks based on constraints
-- Explain the plan (why each task was chosen and when it happens)
+- **Add Pets** — register multiple pets under one owner
+- **Schedule Tasks** — assign care tasks with priority levels and due times
+- **Smart Sorting** — tasks automatically sorted by priority and time
+- **Recurring Tasks** — tasks auto-reschedule on completion
+- **Conflict Detection** — get warned when two tasks overlap for the same pet
 """
     )
 
@@ -44,46 +44,121 @@ owner_name = st.text_input("Owner name", value="Jordan")
 pet_name = st.text_input("Pet name", value="Mochi")
 species = st.selectbox("Species", ["dog", "cat", "other"])
 
-st.markdown("### Tasks")
-st.caption("Add a few tasks. In your final version, these should feed into your scheduler.")
-
-if "tasks" not in st.session_state:
-    st.session_state.tasks = []
-
-col1, col2, col3 = st.columns(3)
-with col1:
-    task_title = st.text_input("Task title", value="Morning walk")
-with col2:
-    duration = st.number_input("Duration (minutes)", min_value=1, max_value=240, value=20)
-with col3:
-    priority = st.selectbox("Priority", ["low", "medium", "high"], index=2)
-
-if st.button("Add task"):
-    st.session_state.tasks.append(
-        {"title": task_title, "duration_minutes": int(duration), "priority": priority}
+# Persist Owner object across reruns
+if "owner" not in st.session_state:
+    st.session_state.owner = Owner(
+        owner_id=str(uuid.uuid4()),
+        name=owner_name,
+        email="",
+        phone="",
+        pets=[],
     )
-
-if st.session_state.tasks:
-    st.write("Current tasks:")
-    st.table(st.session_state.tasks)
 else:
-    st.info("No tasks yet. Add one above.")
+    st.session_state.owner.name = owner_name
+
+# Persist Scheduler object across reruns
+if "scheduler" not in st.session_state:
+    st.session_state.scheduler = Scheduler(tasks=[])
+
+st.caption(f"Current Owner ID: {st.session_state.owner.owner_id}")
 
 st.divider()
+st.subheader("Add a Pet")
 
-st.subheader("Build Schedule")
-st.caption("This button should call your scheduling logic once you implement it.")
+with st.form("add_pet_form"):
+    new_pet_name = st.text_input("Pet name", value=pet_name)
+    new_species = st.selectbox("Pet species", ["dog", "cat", "other"], key="add_pet_species")
+    new_breed = st.text_input("Breed", value="Mixed")
+    new_age = st.number_input("Age", min_value=0, max_value=40, value=1)
+    add_pet_submitted = st.form_submit_button("Add Pet")
 
-if st.button("Generate schedule"):
-    st.warning(
-        "Not implemented yet. Next step: create your scheduling logic (classes/functions) and call it here."
-    )
-    st.markdown(
-        """
-Suggested approach:
-1. Design your UML (draft).
-2. Create class stubs (no logic).
-3. Implement scheduling behavior.
-4. Connect your scheduler here and display results.
-"""
-    )
+    if add_pet_submitted:
+        pet = Pet(
+            pet_id=str(uuid.uuid4()),
+            name=new_pet_name,
+            owner_id=st.session_state.owner.owner_id,
+            species=new_species,
+            breed=new_breed,
+            age=int(new_age),
+        )
+        st.session_state.owner.add_pet(pet)
+        st.success(f"Added pet: {pet.name}")
+
+if st.session_state.owner.pets:
+    st.write("Current pets:")
+    st.table([
+        {
+            "Name": p.name,
+            "Species": p.species,
+            "Breed": p.breed,
+            "Age": p.age,
+        }
+        for p in st.session_state.owner.pets
+    ])
+else:
+    st.info("No pets yet. Add one above.")
+
+st.divider()
+st.subheader("Schedule a Task")
+
+if not st.session_state.owner.pets:
+    st.warning("Add at least one pet before scheduling tasks.")
+else:
+    pet_options = {f"{p.name} ({p.species})": p for p in st.session_state.owner.pets}
+    with st.form("schedule_task_form"):
+        selected_label = st.selectbox("Select pet", list(pet_options.keys()))
+        task_type = st.text_input("Task type", value="Morning walk")
+        due_in_hours = st.number_input("Due in hours", min_value=0, max_value=72, value=1)
+        priority_label = st.selectbox("Priority", ["high", "medium", "low"], index=0)
+        is_recurring = st.checkbox("Recurring task?", value=False)
+        frequency = st.text_input("Frequency (optional)", value="") if is_recurring else ""
+        schedule_task_submitted = st.form_submit_button("Schedule Task")
+
+        if schedule_task_submitted:
+            priority_map = {"high": 1, "medium": 2, "low": 3}
+            selected_pet = pet_options[selected_label]
+            task = Task(
+                task_id=str(uuid.uuid4()),
+                pet_id=selected_pet.pet_id,
+                task_type=task_type,
+                due_time=datetime.now() + timedelta(hours=int(due_in_hours)),
+                priority=priority_map[priority_label],
+                completed=False,
+                is_recurring=is_recurring,
+                frequency=frequency or None,
+            )
+            st.session_state.scheduler.add_task(task)
+            st.success(f"Scheduled task: {task.task_type} for {selected_pet.name}")
+
+st.subheader("⚠️ Task Conflicts")
+
+conflicts = st.session_state.scheduler.detect_conflicts()  # required call
+
+if not conflicts:
+    st.info("No scheduling conflicts detected.")
+else:
+    pets_by_id = {pet.pet_id: pet.name for pet in st.session_state.owner.pets}
+
+    for t1, t2 in conflicts:
+        pet_name = pets_by_id.get(t1.pet_id, "Unknown Pet")
+        gap_text = st.session_state.scheduler.format_time_gap(t1.due_time - t2.due_time)
+        st.warning(
+            f"{pet_name}: '{t1.task_type}' conflicts with '{t2.task_type}' "
+            f"({gap_text} apart)."
+        )
+
+if st.session_state.scheduler.tasks:
+    pet_lookup = {p.pet_id: p.name for p in st.session_state.owner.pets}
+    st.write("Scheduled tasks (by priority):")
+    st.table([
+        {
+            "Task": t.task_type,
+            "Pet": pet_lookup.get(t.pet_id, "Unknown"),
+            "Due": t.due_time,
+            "Priority": t.priority,
+            "Status": "Done" if t.completed else "Pending",
+        }
+        for t in st.session_state.scheduler.sort_by_priority()
+    ])
+else:
+    st.info("No tasks scheduled yet.")
