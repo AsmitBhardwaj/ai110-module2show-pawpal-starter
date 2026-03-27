@@ -12,3 +12,6 @@
 - Conflicts should be shown to the user.  
   **Plan:** Surface detected conflicts in the UI.
 
+  # Stuff to verify in PawPal_System.py
+  
+

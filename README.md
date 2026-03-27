@@ -32,6 +32,21 @@ PawPal+ includes intelligent scheduling algorithms:
   based on their frequency
 - **Conflict Detection** — warns when two tasks for the same pet overlap within 30 minutes
 
+### Testing PawPal+
+- python -m pytest
+-test_task_complete completing a task sets it to True
+-test_scheduler_add_task adding a task increases count by 1
+-test_planned_task sorting returns task ordered by due time then priority
+-test_recurring_completion completing a daily recurring task creates a new task due 1 day later
+-test_pets_with_no_task filtering by pets with no tasks
+-tests_time_conflict two task for same pet at identical time flagged as conflic
+-test_reccuring_no_frequency recurring task with no frequency = none
+-test_filler_empty_scheduler filerting tasks on an empty list returns []
+-test_detect_conflicts two task within 30 min is flagged as conflict
+-test_no_conflict two task 2hrs apart gives no conflict
+
+Confidence Level 4/5
+
 ### Setup
 
 ```bash
