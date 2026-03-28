@@ -30,7 +30,7 @@ classDiagram
         +is_recurring: Boolean
         +frequency: String
         +completed: Boolean
-        +complete()
+        +complete(): Task?
         +reschedule(new_time: DateTime)
         +is_overdue(): Boolean
     }
@@ -40,6 +40,8 @@ classDiagram
         +add_task(task: Task)
         +remove_task(task_id: String)
         +get_todays_tasks(): List<Task>
+        +get_planned_tasks(): List<Task>
+        +filter_tasks(...): List<Task>
         +sort_by_priority()
         +detect_conflicts(): List<Task>
     }
