@@ -140,12 +140,10 @@ else:
     pets_by_id = {pet.pet_id: pet.name for pet in st.session_state.owner.pets}
 
     for t1, t2 in conflicts:
-        pet_name = pets_by_id.get(t1.pet_id, "Unknown Pet")
-        gap_text = st.session_state.scheduler.format_time_gap(t1.due_time - t2.due_time)
-        st.warning(
-            f"{pet_name}: '{t1.task_type}' conflicts with '{t2.task_type}' "
-            f"({gap_text} apart)."
-        )
+        pet_name = pets_by_id.get(t1.pet_id, "Unknown")
+        diff = abs((t1.due_time - t2.due_time).total_seconds() / 60)
+        st.warning(f"⚠️ {pet_name}: '{t1.task_type}' and '{t2.task_type}' are {diff:.0f} mins apart")
+
 
 if st.session_state.scheduler.tasks:
     pet_lookup = {p.pet_id: p.name for p in st.session_state.owner.pets}
@@ -158,7 +156,7 @@ if st.session_state.scheduler.tasks:
             "Priority": t.priority,
             "Status": "Done" if t.completed else "Pending",
         }
-        for t in st.session_state.scheduler.sort_by_priority()
+        for t in st.session_state.scheduler.get_planned_tasks()
     ])
 else:
     st.info("No tasks scheduled yet.")
