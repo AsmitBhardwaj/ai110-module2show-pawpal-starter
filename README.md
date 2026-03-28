@@ -64,3 +64,30 @@ pip install -r requirements.txt
 5. Add tests to verify key behaviors.
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
+
+## Features
+
+PawPal+ includes practical scheduling and task-management algorithms:
+
+- **Due-Time + Priority Planning**  
+  Builds a clean task plan by returning only incomplete tasks, sorted by **earliest due time first**, then **priority** for tie-breaking.
+
+- **One-Pass Task Filtering**  
+  Filters tasks efficiently by optional `pet_id` and/or completion status in a single traversal.
+
+- **Recurring Task Rollover**  
+  Completing a recurring task can automatically generate the next task instance with a shifted due time (supported frequencies: daily, weekly, every 6 hours, twice per day, once a month).
+
+- **Conflict Detection (Same Pet, 30-Minute Window)**  
+  Detects scheduling conflicts when two tasks for the same pet are within 30 minutes of each other.
+
+- **Today View + Priority Sorting**  
+  Provides a “today” task list for incomplete tasks due today, sorted by priority.
+
+- **Overdue Checks + Manual Rescheduling**  
+  Supports overdue detection for incomplete past-due tasks and explicit rescheduling to a new time
+  
+### Demo
+<img src='demo.png' width='600'>
+<img src='demo2.png' width='600'>
+<img src='demo3.png' width='600'>
