@@ -166,6 +166,7 @@ class Scheduler:
         detect_conflicts(): Identifies scheduling conflicts for the same pet within 30-minute intervals.
         get_planned_tasks(): Return all incomplete tasks sorted by (due_time, priority).
         filter_tasks(pet_id=None, completed=None): Filter tasks in one pass.
+        find_next_available_slot(pet_id, duration_minutes=30): Suggest next conflict-free start time.
     """
     tasks: list
 
@@ -214,6 +215,25 @@ class Scheduler:
                 continue
             filtered.append(task)
         return filtered
+
+    def find_next_available_slot(self, pet_id, duration_minutes=30):
+        """Find the next start time with no tasks within 30 minutes for the given pet."""
+        now = datetime.now()
+        window = timedelta(minutes=30)
+        pet_tasks = [task for task in self.tasks if task.pet_id == pet_id]
+
+        # Default behavior when there is no nearby conflict from now.
+        if not any(abs(task.due_time - now) <= window for task in pet_tasks):
+            return now + timedelta(hours=1)
+
+        candidate = now
+        while True:
+            conflicts = [task for task in pet_tasks if abs(task.due_time - candidate) <= window]
+            if not conflicts:
+                return candidate
+
+            latest_conflict = max(task.due_time for task in conflicts)
+            candidate = latest_conflict + window + timedelta(seconds=1)
 
     @staticmethod
     def format_time_gap(delta: timedelta) -> str:

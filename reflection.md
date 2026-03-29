@@ -75,15 +75,39 @@ will not be experiencing any performance cost
 **a. How you used AI**
 
 - How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
+
+I used GitHub Copilot throughout the project in several ways:
+- **Design brainstorming** — used Copilot Chat to generate the initial UML 
+  class diagram and brainstorm attributes and methods for each class
+- **Code generation** — used Inline Chat to generate the Python dataclass 
+  skeleton and implement method bodies like detect_conflicts() and get_planned_tasks()
+- **Code review** — used #file:pawpal_system.py to ask Copilot to review 
+  the skeleton for missing relationships and type mismatches
+- **Test generation** — used Copilot to draft pytest tests for edge cases 
+  like empty schedulers, recurring tasks, and conflict detection
+- **Streamlit wiring** — used Copilot to connect the backend classes to 
+  the UI using st.session_state
+
 - What kinds of prompts or questions were most helpful?
+
+The most helpful prompts were ones that referenced specific files using 
+#file: and gave clear context about what the classes were supposed to do.
 
 **b. Judgment and verification**
 
 - Describe one moment where you did not accept an AI suggestion as-is.
+
+Copilot hallucinated a method called scheduler.format_time_gap() in app.py 
+that never existed in pawpal_system.py. The app would have crashed immediately 
+if I had accepted it without reviewing. I caught it by reading the generated 
+code carefully and checking it against the actual methods in pawpal_system.py. 
+I replaced it with a direct calculation using timedelta.total_seconds() instead.
+
 - How did you evaluate or verify what the AI suggested?
 
--Copilot could not hallucinated that it made the method scheduler.format_time_gap()
-
+Copilot also initially dropped task_type, is_recurring, and frequency from 
+the Task dataclass when generating the skeleton. I caught this by comparing 
+the output against our UML design and asked Copilot to restore the missing fields
 ---
 
 ## 4. Testing and Verification
@@ -91,12 +115,48 @@ will not be experiencing any performance cost
 **a. What you tested**
 
 - What behaviors did you test?
+
+I wrote 10 pytest tests covering the following behaviors:
+
+- **Task completion** — verified that calling complete() sets completed=True
+- **Scheduler task addition** — verified that add_task() increases task count
+- **Planned task sorting** — verified get_planned_tasks() returns tasks ordered 
+  by due_time then priority
+- **Recurring task logic** — verified that completing a daily recurring task 
+  creates a new task due exactly 1 day later with completed=False
+- **Pet with no tasks** — verified filter_tasks() returns an empty list without 
+  errors when a pet has no tasks assigned
+- **Exact time conflicts** — verified two tasks for the same pet at identical 
+  times are flagged as a conflict
+- **Recurring task with no frequency** — verified complete() returns None when 
+  is_recurring=True but frequency=None
+- **Empty scheduler filtering** — verified filter_tasks() handles all argument 
+  combinations on an empty scheduler without crashing
+- **Conflict detection** — verified tasks within 30 minutes trigger a conflict
+- **No false conflicts** — verified tasks 2 hours apart are not flagged
+
 - Why were these tests important?
+
+These tests were important because the scheduling and conflict logic are the 
+core of PawPal+ — if they break silently, the app gives wrong output without 
+any error message.
 
 **b. Confidence**
 
 - How confident are you that your scheduler works correctly?
+
+I am 4/5 confident that the scheduler works correctly. All 10 tests pass and 
+the Streamlit UI correctly displays sorted tasks, filtered views, and conflict 
+warnings. 
+
 - What edge cases would you test next if you had more time?
+
+
+If I had more time I would test:
+- Recurring tasks with every frequency type (weekly, every 6 hours, etc.)
+- What happens when two pets have tasks at the same time (should not conflict)
+- get_todays_tasks() when tasks span multiple days
+- The Streamlit UI behavior when the same pet is added twice
 
 ---
 
@@ -106,10 +166,34 @@ will not be experiencing any performance cost
 
 - What part of this project are you most satisfied with?
 
+I am most satisfied with the conflict detection and recurring task logic. 
+The detect_conflicts() algorithm correctly identifies overlapping tasks for 
+the same pet, and the recurring task system automatically generates the next 
+occurrence when a task is completed — both features work seamlessly in the 
+Streamlit UI. The test suite also came together well, with 10 passing tests 
+covering both happy paths and edge cases.
+
 **b. What you would improve**
 
 - If you had another iteration, what would you improve or redesign?
 
+If I had another iteration I would:
+- Add a task duration field so conflict detection checks for actual time 
+  window overlaps rather than just proximity of start times
+- Add a way to mark tasks complete directly from the Streamlit UI instead 
+  of only through code
+- Store data persistently using a database or JSON file so tasks and pets 
+  don't reset when the app restarts
+- Add support for multiple owners instead of just one
+
 **c. Key takeaway**
 
 - What is one important thing you learned about designing systems or working with AI on this project?
+
+The most important thing I learned is that AI is a powerful assistant but 
+not a replacement for understanding your own code. Copilot hallucinated a 
+method that didn't exist and dropped fields from my dataclasses — both of 
+which would have broken the app silently. The only reason I caught these 
+mistakes was because I understood the design well enough to know something 
+was wrong. AI works best when you use it to speed up work you already 
+understand, not to replace the understanding itself.

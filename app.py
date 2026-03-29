@@ -160,3 +160,11 @@ if st.session_state.scheduler.tasks:
     ])
 else:
     st.info("No tasks scheduled yet.")
+
+st.divider()
+st.subheader("🕐 Next Available Slot")
+if st.session_state.owner.pets:
+    slot_pet = st.selectbox("Find next slot for:", [p.name for p in st.session_state.owner.pets], key="slot_pet")
+    selected = next(p for p in st.session_state.owner.pets if p.name == slot_pet)
+    slot = st.session_state.scheduler.find_next_available_slot(selected.pet_id)
+    st.success(f"Next available slot for {slot_pet}: {slot.strftime('%Y-%m-%d %H:%M')}")
