@@ -197,3 +197,31 @@ which would have broken the app silently. The only reason I caught these
 mistakes was because I understood the design well enough to know something 
 was wrong. AI works best when you use it to speed up work you already 
 understand, not to replace the understanding itself.
+
+## 6. Prompt Comparison
+
+**Task:** Implement `reschedule_recurring_tasks()` for the Scheduler class
+
+**Copilot (GPT-4.o):**
+- Builds `frequency_map` inside the loop — inefficient, recreates 
+  the dict on every iteration
+- Uses a `while` loop to catch up multiple missed intervals — 
+  smarter for long gaps (e.g. app was closed for a week)
+- Uses `task_id + "-rescheduled"` instead of a new uuid — 
+  could cause duplicate ID bugs if rescheduled twice
+- Uses `self.tasks.extend()` instead of `add_task()` — 
+  bypasses any future logic added to add_task()
+- No return value — caller can't inspect what was generated
+
+**Claude:**
+- Builds `frequency_map` once outside the loop — more efficient
+- Uses `uuid.uuid4()` for new task IDs — safer, no duplicates
+- Calls `self.add_task()` instead of direct list extend — 
+  more modular, respects the class interface
+- Returns new tasks so the caller can inspect or log them
+- Handles `None` frequency gracefully with early `continue`
+
+**Conclusion:** Copilot's `while` loop for catching up missed 
+intervals is actually a useful improvement. Claude's version is 
+more modular and Pythonic overall, but combining both approaches 
+would produce the best result.
