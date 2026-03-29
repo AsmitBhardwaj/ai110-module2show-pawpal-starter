@@ -2,6 +2,7 @@ import streamlit as st
 from pawpal_system import Task, Pet, Owner, Scheduler
 from datetime import datetime, timedelta
 import uuid
+import os
 
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
@@ -44,21 +45,38 @@ owner_name = st.text_input("Owner name", value="Jordan")
 pet_name = st.text_input("Pet name", value="Mochi")
 species = st.selectbox("Species", ["dog", "cat", "other"])
 
-# Persist Owner object across reruns
-if "owner" not in st.session_state:
-    st.session_state.owner = Owner(
-        owner_id=str(uuid.uuid4()),
-        name=owner_name,
-        email="",
-        phone="",
-        pets=[],
-    )
-else:
-    st.session_state.owner.name = owner_name
+DATA_FILE = "data.json"
 
-# Persist Scheduler object across reruns
-if "scheduler" not in st.session_state:
-    st.session_state.scheduler = Scheduler(tasks=[])
+
+def save_session_data():
+    st.session_state.owner.save_to_json(st.session_state.scheduler, DATA_FILE)
+
+# Persist Owner object across reruns
+if "owner" not in st.session_state or "scheduler" not in st.session_state:
+    if os.path.exists(DATA_FILE):
+        loaded_data = Owner.load_from_json(DATA_FILE)
+        if loaded_data is not None:
+            st.session_state.owner, st.session_state.scheduler = loaded_data
+        else:
+            st.session_state.owner = Owner(
+                owner_id=str(uuid.uuid4()),
+                name=owner_name,
+                email="",
+                phone="",
+                pets=[],
+            )
+            st.session_state.scheduler = Scheduler(tasks=[])
+    else:
+        st.session_state.owner = Owner(
+            owner_id=str(uuid.uuid4()),
+            name=owner_name,
+            email="",
+            phone="",
+            pets=[],
+        )
+        st.session_state.scheduler = Scheduler(tasks=[])
+
+st.session_state.owner.name = owner_name
 
 st.caption(f"Current Owner ID: {st.session_state.owner.owner_id}")
 
@@ -82,6 +100,7 @@ with st.form("add_pet_form"):
             age=int(new_age),
         )
         st.session_state.owner.add_pet(pet)
+        save_session_data()
         st.success(f"Added pet: {pet.name}")
 
 if st.session_state.owner.pets:
@@ -128,6 +147,7 @@ else:
                 frequency=frequency or None,
             )
             st.session_state.scheduler.add_task(task)
+            save_session_data()
             st.success(f"Scheduled task: {task.task_type} for {selected_pet.name}")
 
 st.subheader("⚠️ Task Conflicts")

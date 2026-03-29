@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from typing import Optional
 from copy import copy
 from uuid import uuid4
+import json
+import os
 
 @dataclass
 class Task:
@@ -149,6 +151,55 @@ Methods:
 
     def get_pets(self):
         return self.pets
+
+    def save_to_json(self, scheduler, filepath):
+        """Save owner + pets + scheduler tasks to a JSON file."""
+        owner_data = asdict(self)
+
+        # Custom conversion for datetime fields in tasks.
+        tasks_data = []
+        for task in scheduler.tasks:
+            task_data = asdict(task)
+            task_data["due_time"] = task.due_time.isoformat()
+            tasks_data.append(task_data)
+
+        payload = {
+            "owner": owner_data,
+            "tasks": tasks_data,
+        }
+
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2)
+
+    @staticmethod
+    def load_from_json(filepath):
+        """Load owner + pets + tasks from JSON and return (Owner, Scheduler)."""
+        if not os.path.exists(filepath):
+            return None
+
+        with open(filepath, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        owner_blob = data.get("owner", {})
+        pets = [Pet(**pet_data) for pet_data in owner_blob.get("pets", [])]
+
+        tasks = []
+        for task_data in data.get("tasks", []):
+            task_copy = dict(task_data)
+            due_time_raw = task_copy.get("due_time")
+            if due_time_raw is not None:
+                task_copy["due_time"] = datetime.fromisoformat(due_time_raw)
+            tasks.append(Task(**task_copy))
+
+        owner = Owner(
+            owner_id=owner_blob.get("owner_id", ""),
+            name=owner_blob.get("name", ""),
+            email=owner_blob.get("email", ""),
+            phone=owner_blob.get("phone", ""),
+            pets=pets,
+        )
+        scheduler = Scheduler(tasks=tasks)
+        return owner, scheduler
 
 @dataclass
 class Scheduler:   

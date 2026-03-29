@@ -91,3 +91,38 @@ PawPal+ includes practical scheduling and task-management algorithms:
 <img src='demo.png' width='600'>
 <img src='demo2.png' width='600'>
 <img src='demo3.png' width='600'>
+
+## 🤖 Agent Mode — Advanced Feature
+
+### Next Available Slot Algorithm
+
+Used **Agent Mode** in Copilot to implement `find_next_available_slot(pet_id)` 
+in the `Scheduler` class.
+
+**How it works:**
+1. Filters all tasks for the given pet
+2. If no tasks exist near the current time, returns now + 1 hour
+3. Otherwise loops through conflicts, jumping past each 30-minute window 
+   until a free slot is found
+4. Returns the next conflict-free datetime for that pet
+
+**Example output:**
+> "Next available slot for Dodo: 2026-03-28 21:15"
+
+This feature helps pet owners instantly find when they can schedule a new 
+task without creating a conflict.
+
+## 💾 Data Persistence
+
+PawPal+ remembers your pets and tasks between sessions using a `data.json` file.
+
+**How it works:**
+- On startup, the app checks for `data.json` and loads all pets and tasks 
+  automatically
+- After adding a pet or scheduling a task, data is saved immediately
+- Uses `isoformat()` to serialize datetime objects and reconstructs them 
+  on load
+
+**Implemented using Agent Mode** — Copilot planned and executed changes 
+across both `pawpal_system.py` and `app.py` simultaneously, adding 
+`save_to_json()` and `load_from_json()` to the `Owner` class.

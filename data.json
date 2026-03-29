@@ -1,0 +1,27 @@
+{
+  "owner": {
+    "owner_id": "51eb0a19-c5ae-4401-a6a5-1d6aafcc7869",
+    "name": "Jordan",
+    "email": "",
+    "phone": "",
+    "pets": [
+      {
+        "pet_id": "ff331d2a-5643-4b7f-8140-acc87f94f068",
+        "name": "Dodo",
+        "owner_id": "51eb0a19-c5ae-4401-a6a5-1d6aafcc7869",
+        "species": "dog",
+        "breed": "Mixed",
+        "age": 1
+      },
+      {
+        "pet_id": "015c5e2c-542c-4a96-864b-a96220bd7fd3",
+        "name": "Bambi",
+        "owner_id": "51eb0a19-c5ae-4401-a6a5-1d6aafcc7869",
+        "species": "cat",
+        "breed": "Mixed",
+        "age": 1
+      }
+    ]
+  },
+  "tasks": []
+}
