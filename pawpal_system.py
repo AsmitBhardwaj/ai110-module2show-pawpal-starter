@@ -218,6 +218,7 @@ class Scheduler:
         get_planned_tasks(): Return all incomplete tasks sorted by (due_time, priority).
         filter_tasks(pet_id=None, completed=None): Filter tasks in one pass.
         find_next_available_slot(pet_id, duration_minutes=30): Suggest next conflict-free start time.
+        reschedule_recurring_tasks(): Scan all recurring tasks and reschedule overdue ones.
     """
     tasks: list
 
@@ -285,6 +286,41 @@ class Scheduler:
 
             latest_conflict = max(task.due_time for task in conflicts)
             candidate = latest_conflict + window + timedelta(seconds=1)
+
+    def reschedule_recurring_tasks(self):
+        """Scan all recurring tasks and reschedule overdue ones."""
+        now = datetime.now()
+        new_tasks = []
+
+        for task in self.tasks:
+            if task.is_recurring and task.is_overdue():
+                frequency_map = {
+                    "daily": timedelta(days=1),
+                    "weekly": timedelta(weeks=1),
+                    "every 6 hours": timedelta(hours=6),
+                    "twice per day": timedelta(hours=12),
+                    "once a month": timedelta(days=30),
+                }
+
+                shift = frequency_map.get(task.frequency.strip().lower())
+                if shift:
+                    next_due_time = task.due_time + shift
+                    while next_due_time < now:
+                        next_due_time += shift
+
+                    new_task = Task(
+                        task_id=f"{task.task_id}-rescheduled",
+                        pet_id=task.pet_id,
+                        task_type=task.task_type,
+                        due_time=next_due_time,
+                        priority=task.priority,
+                        completed=False,
+                        is_recurring=task.is_recurring,
+                        frequency=task.frequency,
+                    )
+                    new_tasks.append(new_task)
+
+        self.tasks.extend(new_tasks)
 
     @staticmethod
     def format_time_gap(delta: timedelta) -> str:

@@ -23,5 +23,26 @@
       }
     ]
   },
-  "tasks": []
+  "tasks": [
+    {
+      "task_id": "90fd4449-0750-4d44-9962-8a975c63364e",
+      "pet_id": "ff331d2a-5643-4b7f-8140-acc87f94f068",
+      "task_type": "Morning walk",
+      "due_time": "2026-03-29T12:00:17.611665",
+      "priority": 2,
+      "completed": false,
+      "is_recurring": false,
+      "frequency": null
+    },
+    {
+      "task_id": "d4532b60-6a03-486d-b8df-17586b21fcb0",
+      "pet_id": "015c5e2c-542c-4a96-864b-a96220bd7fd3",
+      "task_type": "Morning walk",
+      "due_time": "2026-03-29T12:00:24.673169",
+      "priority": 1,
+      "completed": false,
+      "is_recurring": false,
+      "frequency": null
+    }
+  ]
 }

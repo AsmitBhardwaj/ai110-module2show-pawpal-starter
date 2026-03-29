@@ -167,10 +167,19 @@ else:
 
 if st.session_state.scheduler.tasks:
     pet_lookup = {p.pet_id: p.name for p in st.session_state.owner.pets}
+    level_map = {1: "🔴", 2: "🟡", 3: "🟢"}
+    task_emoji = {
+        "feeding": "🍖",
+        "walk": "🦮",
+        "medication": "💊",
+        "appointment": "🏥",
+        "morning walk": "🦮",
+}
     st.write("Scheduled tasks (by priority):")
     st.table([
         {
-            "Task": t.task_type,
+            "Level": level_map.get(t.priority, "⚪"),
+            "Task": f"{task_emoji.get(t.task_type.lower(), '📋')} {t.task_type}",
             "Pet": pet_lookup.get(t.pet_id, "Unknown"),
             "Due": t.due_time,
             "Priority": t.priority,
